@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="UTF-8">
+    <title>Untitled</title>
+    
+
+  </head>
+    
+  <body>
+  <!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Number Survival - Vertical Hardcore</title>
+    <style>
+        /* 📱 จัดหน้าจอให้เป็นแนวตั้งและอยู่ตรงกลาง */
+        body { margin: 0; padding: 0; background-color: #000; color: #00ff00; font-family: 'Courier New', Courier, monospace; overflow: hidden; touch-action: none; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        
+        #mobileWrapper { position: relative; width: 100vw; height: 100vh; max-width: 480px; background-color: #050505; overflow: hidden; box-shadow: 0 0 30px rgba(0, 255, 0, 0.1); border-left: 1px solid #003300; border-right: 1px solid #003300; }
+
+        #gameContainer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; }
+        canvas { display: block; width: 100%; height: 100%; background-color: #0a0a0a; }
+        
+        @keyframes flicker {
+            0% { opacity: 0.95; } 5% { opacity: 0.85; } 10% { opacity: 0.95; } 15% { opacity: 1; }
+            50% { opacity: 0.95; } 55% { opacity: 0.8; } 60% { opacity: 0.98; } 100% { opacity: 0.95; }
+        }
+        #mobileWrapper::after {
+            content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            background-size: 100% 4px, 3px 100%; pointer-events: none; z-index: 999; animation: flicker 0.15s infinite;
+        }
+
+        #hud { position: absolute; top: 10px; left: 10px; font-size: 14px; font-weight: bold; text-shadow: 2px 2px 4px #000; pointer-events: none; color: #44ff44; z-index: 10; line-height: 1.5; }
+        
+        /* 🕹️ ปุ่มควบคุม */
+        #dpad { position: absolute; bottom: 20px; left: 15px; width: 120px; height: 120px; z-index: 10; }
+        .btn-dir { position: absolute; width: 35px; height: 35px; background: rgba(0, 50, 0, 0.5); border: 2px solid #050; border-radius: 8px; font-size: 20px; text-align: center; line-height: 31px; user-select: none; color: #44ff44; }
+        .btn-dir:active { background: rgba(0, 150, 0, 0.7); border-color: #0f0; }
+        #btn-up { top: 0; left: 40px; } #btn-down { bottom: 0; left: 40px; }
+        #btn-left { top: 40px; left: 0; } #btn-right { top: 40px; right: 0; }
+
+        #btn-shoot { position: absolute; bottom: 35px; right: 15px; width: 70px; height: 70px; background: rgba(150, 0, 0, 0.5); border: 3px solid #ff0000; border-radius: 50%; font-size: 16px; font-weight: bold; text-align: center; line-height: 64px; user-select: none; box-shadow: 0 0 15px #ff0000; color: white; z-index: 10; font-family: 'Courier New', Courier, monospace; }
+        #btn-shoot:active { background: rgba(255, 0, 0, 0.8); }
+
+        .screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 100; padding: 15px; box-sizing: border-box; text-align: center; }
+        
+        .glitch { position: relative; color: #fff; font-size: 28px; text-transform: uppercase; font-family: 'Impact', sans-serif; letter-spacing: 2px; text-align: center; margin-bottom: 10px; flex-shrink: 0; }
+        .glitch::before, .glitch::after { content: attr(data-text); position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0); }
+        .glitch::before { left: 2px; text-shadow: -1px 0 #ff00c1; animation: glitch-anim 2s infinite linear alternate-reverse; }
+        .glitch::after { left: -2px; text-shadow: -1px 0 #00fff9; animation: glitch-anim2 2.5s infinite linear alternate-reverse; }
+        @keyframes glitch-anim { 0% { clip-path: inset(20% 0 80% 0); transform: translate(-2px, 1px); } 20% { clip-path: inset(60% 0 10% 0); transform: translate(2px, -1px); } 40% { clip-path: inset(40% 0 50% 0); transform: translate(-2px, 2px); } 60% { clip-path: inset(80% 0 5% 0); transform: translate(2px, -2px); } 80% { clip-path: inset(10% 0 70% 0); transform: translate(-1px, 1px); } 100% { clip-path: inset(30% 0 50% 0); transform: translate(1px, -1px); } }
+        @keyframes glitch-anim2 { 0% { clip-path: inset(10% 0 60% 0); transform: translate(2px, 1px); } 20% { clip-path: inset(30% 0 20% 0); transform: translate(-2px, -1px); } 40% { clip-path: inset(70% 0 10% 0); transform: translate(2px, 2px); } 60% { clip-path: inset(20% 0 50% 0); transform: translate(-2px, -2px); } 80% { clip-path: inset(50% 0 30% 0); transform: translate(1px, 1px); } 100% { clip-path: inset(5% 0 80% 0); transform: translate(-1px, -1px); } }
+
+        /* 📝 ปรับปรุงกล่องคำอธิบายให้ Scroll ได้ */
+        #howToPlay { border: 1px dashed #ff0000; background: rgba(30, 0, 0, 0.7); padding: 15px; margin-bottom: 20px; width: 100%; max-width: 400px; max-height: 50vh; overflow-y: auto; font-size: 13px; line-height: 1.6; text-align: left; box-shadow: 0 0 15px rgba(255,0,0,0.3); flex-shrink: 1; }
+        
+        /* สไตล์ Scrollbar สำหรับกล่องคำอธิบาย */
+        #howToPlay::-webkit-scrollbar { width: 6px; }
+        #howToPlay::-webkit-scrollbar-track { background: rgba(0,0,0,0.5); }
+        #howToPlay::-webkit-scrollbar-thumb { background: #ff0000; border-radius: 3px; }
+
+        #howToPlay h3 { color: #fff; margin-top: 0; text-align: center; border-bottom: 1px solid #f00; padding-bottom: 5px; font-size: 16px; position: sticky; top: 0; background: rgba(30, 0, 0, 0.9); z-index: 2; margin-bottom: 10px;}
+        #howToPlay ul { padding-left: 20px; margin-bottom: 10px; }
+        #howToPlay li { margin-bottom: 8px; }
+        .hl-blue { color: #00ffff; font-weight: bold; } .hl-red { color: #ff4444; font-weight: bold; } .hl-green { color: #44ff44; font-weight: bold; } .hl-yellow { color: #ffff44; font-weight: bold; }
+
+        button.start-btn { padding: 12px 25px; font-size: 16px; background-color: #440000; color: #ff4444; border: 2px solid #ff4444; cursor: pointer; font-weight: bold; box-shadow: 0 0 15px rgba(255,0,0,0.5); transition: 0.2s; z-index: 1000; font-family: 'Courier New', Courier, monospace; margin-bottom: 20px; flex-shrink: 0;}
+        button.start-btn:hover { background-color: #660000; color: #fff; transform: scale(1.05); }
+
+        #questionBox { background: #001a00; padding: 20px; border: 2px solid #00ff00; text-align: center; width: 90%; box-shadow: 0 0 20px #00ff00; max-height: 80vh; overflow-y: auto; }
+        #questionText { font-size: 14px; margin-bottom: 15px; color: #fff; line-height: 1.5; }
+        .choice-btn { display: block; width: 100%; padding: 10px; margin: 8px 0; font-size: 14px; background: #003300; border: 1px solid #44ff44; color: white; cursor: pointer; transition: 0.2s; font-family: 'Courier New', Courier, monospace; }
+        .choice-btn:hover { background: #006600; }
+    </style>
+</head>
+<body>
+
+<div id="mobileWrapper">
+
+    <div id="startScreen" class="screen">
+        <h1 class="glitch" data-text="ERROR 404: SURVIVAL">ERROR 404: SURVIVAL</h1>
+        
+        <div id="howToPlay">
+            <h3>[ SYSTEM INSTRUCTIONS / คู่มือเอาชีวิตรอด ]</h3>
+            
+            <b>1. เป้าหมายภารกิจ:</b>
+            <ul>
+                <li>คุณคือหมายเลข <span class="hl-blue">"1"</span> (สีฟ้า) เอาชีวิตรอดให้ครบทั้ง 10 ด่าน</li>
+                <li>ใช้พลังงานลบ (-) ยิงกำจัด <span class="hl-red">"0"</span> (ซอมบี้) ให้หมดทุกตัวในพื้นที่</li>
+                <li>เมื่อ 0 หมด ประตูทางออก <span class="hl-green">"∑"</span> จะปลดล็อก ให้เดินเข้าไปเพื่อเข้าสู่ Logic Gate</li>
+            </ul>
+
+            <b>2. การควบคุม (Controls):</b>
+            <ul>
+                <li><span class="hl-yellow">บนมือถือ:</span> ใช้ D-Pad ซ้ายล่างเพื่อเดิน และกดปุ่ม "ยิง" ขวาล่าง</li>
+                <li><span class="hl-yellow">บน PC:</span> ใช้ปุ่ม W, A, S, D หรือ ลูกศร เพื่อเดิน และกด Spacebar เพื่อยิง</li>
+            </ul>
+
+            <b>3. ระบบอัปเกรด & คำถาม (Logic Gate):</b>
+            <ul>
+                <li>เมื่อเข้าประตู คุณจะต้องตอบคำถาม <b>ตรรกศาสตร์คณิตศาสตร์</b> 1 ข้อ</li>
+                <li>หากตอบ <b>"ถูก"</b> คุณจะได้ไปด่านต่อไป และ <span class="hl-green">อัปเกรดปืน</span> (ยิงกระจายขึ้น สูงสุด 4 ทิศทาง)</li>
+                <li>ยิ่งด่านลึก คำถามจะยิ่งยากขึ้น!</li>
+            </ul>
+
+            <b>4. กฎเหล็ก (Permadeath):</b>
+            <ul>
+                <li><span class="hl-red">ห้ามให้ "0" สัมผัสตัวคุณเด็ดขาด!</span> ไม่งั้นค่าของคุณจะกลายเป็นศูนย์ (ตายทันที)</li>
+                <li><span class="hl-red">ห้ามตอบคำถามหน้าประตูผิดแม้แต่ข้อเดียว!</span></li>
+                <li>หากพลาดใน 2 กรณีข้างต้น ระบบจะปรับคุณแพ้ และบังคับ <span class="hl-red">รีเซ็ตเริ่มด่าน 1 ใหม่ทั้งหมด!</span></li>
+            </ul>
+        </div>
+
+        <button class="start-btn" onclick="startGame()">[ INITIATE RUN ]</button>
+    </div>
+
+    <div id="gameContainer">
+        <canvas id="gameCanvas"></canvas>
+        <div id="hud">
+            [n] สมการที่: <span id="lvlDisplay">1</span>/10 <br>
+            [x] 0 หลบซ่อน: <span id="zombieCountDisplay" style="color:#ff4444;">0</span> <br>
+            [p] ปืนเลเวล: <span id="wpnDisplay">1</span>
+        </div>
+        
+        <div id="dpad">
+            <div id="btn-up" class="btn-dir">↑</div> <div id="btn-left" class="btn-dir">←</div>
+            <div id="btn-right" class="btn-dir">→</div> <div id="btn-down" class="btn-dir">↓</div>
+        </div>
+        <div id="btn-shoot">ยิง</div>
+    </div>
+
+    <div id="questionModal" class="screen" style="display: none;">
+        <div id="questionBox">
+            <h2 class="glitch" data-text="LOGIC GATE" style="color: #44ff44; font-size: 20px; margin-top: 0;">LOGIC GATE</h2>
+            <div id="questionText">คำถามตรรกศาสตร์จะแสดงที่นี่</div>
+            <div id="choicesContainer"></div>
+        </div>
+    </div>
+
+    <div id="gameOverScreen" class="screen" style="display: none;">
+        <h1 id="endTitle" class="glitch" data-text="SYSTEM FAILURE">SYSTEM FAILURE</h1>
+        <p style="color: #fff; margin-bottom: 20px; font-size: 14px; padding: 0 10px;" id="endDesc">ข้อความจบเกม</p>
+        <button class="start-btn" onclick="restartGame()">[ REBOOT ]</button> 
+    </div>
+
+</div>
+
+<script>
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    let audioCtx;
+
+    function playShootSound() {
+        if (!audioCtx) audioCtx = new AudioContext();
+        const osc = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.1);
+        gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+        osc.connect(gainNode); gainNode.connect(audioCtx.destination);
+        osc.start(); osc.stop(audioCtx.currentTime + 0.1);
+    }
+
+    const questions = [
+        { q: "ด่าน 1: ถ้า p เป็นจริง และ q เป็นเท็จ ข้อใดมีค่าความจริงเป็น 'เท็จ'?", choices: ["p ∨ q", "p → q", "q → p"], ans: 1 },
+        { q: "ด่าน 2: ถ้า p เป็นเท็จ แล้ว p ∧ q มีค่าความจริงเป็นอะไร?", choices: ["เท็จเสมอ", "จริงเสมอ", "ขึ้นอยู่กับ q"], ans: 0 },
+        { q: "ด่าน 3: ~(p ∨ q) สมมูลกับข้อใด?", choices: ["~p ∨ ~q", "~p ∧ ~q", "p ∧ q"], ans: 1 },
+        { q: "ด่าน 4: ข้อใดสมมูลกับ p → q ?", choices: ["~p ∨ q", "p ∨ ~q", "~p ∧ q"], ans: 0 },
+        { q: "ด่าน 5: ถ้า p → q เป็น 'เท็จ' แล้ว p และ q มีค่าความจริงตามลำดับคือข้อใด?", choices: ["T, T", "F, T", "T, F"], ans: 2 },
+        { q: "ด่าน 6: ประพจน์ใดต่อไปนี้เป็น 'สัจนิรันดร์'?", choices: ["(p ∧ q) → p", "p ∨ ~q", "p → (p ∧ q)"], ans: 0 },
+        { q: "ด่าน 7: ถ้า (p ∧ q) → r เป็นเท็จ ข้อใดสรุปได้ถูกต้อง?", choices: ["p เป็นเท็จ", "q เป็นเท็จ", "r เป็นเท็จ"], ans: 2 },
+        { q: "ด่าน 8: ข้อใดสมมูลกับ ~(p → ~q) ?", choices: ["p ∧ q", "~p ∨ q", "p ∨ q"], ans: 0 },
+        { q: "ด่าน 9: กำหนด p,q,r = T,F,T ค่าของ (p → q) ↔ ~r คือ?", choices: ["จริง", "เท็จ", "หาค่าไม่ได้"], ans: 0 },
+        { q: "ด่าน 10: [(p → q) ∧ (q → r)] → (p → r) เป็นสัจนิรันดร์หรือไม่?", choices: ["เป็น", "ไม่เป็น", "ขึ้นอยู่กับ p"], ans: 0 }
+    ];
+
+    const wrapper = document.getElementById('mobileWrapper');
+    const canvas = document.getElementById('gameCanvas'); 
+    const ctx = canvas.getContext('2d');
+    
+    let w, h; let isPlaying = false; let controlsSetup = false;
+    let level = 1; let weaponLevel = 1;
+    let player = { x: 50, y: 50, size: 14, speed: 4.5, lastDir: {x: 1, y: 0} }; 
+    let door = { x: 0, y: 0, w: 50, h: 50 };
+    let zombies = []; let bullets = []; let obstacles = []; let dataTrails = []; 
+    let keys = { up: false, down: false, left: false, right: false };
+
+    function resize() { 
+        w = canvas.width = wrapper.clientWidth; 
+        h = canvas.height = wrapper.clientHeight; 
+    }
+    window.addEventListener('resize', resize); 
+    resize(); 
+
+    function setupControls() {
+        const bindBtn = (id, keyName) => {
+            const btn = document.getElementById(id);
+            btn.addEventListener('mousedown', () => keys[keyName] = true);
+            btn.addEventListener('mouseup', () => keys[keyName] = false);
+            btn.addEventListener('mouseleave', () => keys[keyName] = false);
+            btn.addEventListener('touchstart', (e) => { e.preventDefault(); keys[keyName] = true; }, {passive: false});
+            btn.addEventListener('touchend', (e) => { e.preventDefault(); keys[keyName] = false; }, {passive: false});
+        };
+        bindBtn('btn-up', 'up'); bindBtn('btn-down', 'down'); bindBtn('btn-left', 'left'); bindBtn('btn-right', 'right');
+
+        const shootBtn = document.getElementById('btn-shoot');
+        const fire = (e) => { if(e) e.preventDefault(); shoot(); };
+        shootBtn.addEventListener('mousedown', fire); shootBtn.addEventListener('touchstart', fire, {passive: false});
+
+        window.addEventListener('keydown', (e) => {
+            if(e.key === 'ArrowUp' || e.key === 'w') keys.up = true;
+            if(e.key === 'ArrowDown' || e.key === 's') keys.down = true;
+            if(e.key === 'ArrowLeft' || e.key === 'a') keys.left = true;
+            if(e.key === 'ArrowRight' || e.key === 'd') keys.right = true;
+            if(e.code === 'Space') shoot();
+        });
+        window.addEventListener('keyup', (e) => {
+            if(e.key === 'ArrowUp' || e.key === 'w') keys.up = false;
+            if(e.key === 'ArrowDown' || e.key === 's') keys.down = false;
+            if(e.key === 'ArrowLeft' || e.key === 'a') keys.left = false;
+            if(e.key === 'ArrowRight' || e.key === 'd') keys.right = false;
+        });
+    }
+
+    function startGame() {
+        if(audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+        document.getElementById('startScreen').style.display = 'none';
+        document.getElementById('gameContainer').style.display = 'block';
+        resize(); 
+        if(!controlsSetup) { setupControls(); controlsSetup = true; }
+        initLevel(level); isPlaying = true; update();
+    }
+
+    function restartGame() {
+        document.getElementById('gameOverScreen').style.display = 'none';
+        level = 1; weaponLevel = 1;
+        keys = { up: false, down: false, left: false, right: false };
+        player.lastDir = {x: 1, y: 0}; startGame();
+    }
+
+    function generateMaze() {
+        obstacles = []; let colSize = 100; let rowSize = 100;
+        let cols = Math.floor(w / colSize); let rows = Math.floor(h / rowSize);
+        for(let r = 1; r < rows; r++) {
+            for(let c = 1; c < cols; c++) {
+                if(Math.random() < 0.4) {
+                    let isHorizontal = Math.random() < 0.5; let wallThick = 20; 
+                    if(isHorizontal) obstacles.push({ x: c * colSize - colSize/2, y: r * rowSize - wallThick/2, w: colSize, h: wallThick });
+                    else obstacles.push({ x: c * colSize - wallThick/2, y: r * rowSize - rowSize/2, w: wallThick, h: rowSize });
+                }
+            }
+        }
+    }
+
+    function initLevel(lvl) {
+        bullets = []; zombies = []; dataTrails = [];
+        for(let i=0; i<15; i++) dataTrails.push({ x: Math.random() * w, y: Math.random() * h, text: ["null", "NaN", "undefined"][Math.floor(Math.random()*3)], alpha: Math.random() * 0.3 + 0.1 });
+
+        player.x = w / 2; player.y = h - 160; 
+        
+        door.x = Math.random() * (w - 100) + 50; door.y = Math.random() * (h/2); 
+        while(Math.hypot(player.x - door.x, player.y - door.y) < 200) {
+            door.x = Math.random() * (w - 100) + 50; door.y = Math.random() * (h/2);
+        }
+
+        generateMaze();
+        obstacles = obstacles.filter(obs => {
+            let hitPlayer = rectIntersect(player.x-40, player.y-40, 80, 80, obs.x, obs.y, obs.w, obs.h);
+            let hitDoor = rectIntersect(door.x-20, door.y-20, door.w+40, door.h+40, obs.x, obs.y, obs.w, obs.h);
+            return !hitPlayer && !hitDoor;
+        });
+
+        let numZombies = 4 + (lvl * 2); 
+        let currentZombieSpeed = 1.0 + (lvl * 0.15); 
+
+        for(let i = 0; i < numZombies; i++) {
+            zombies.push({
+                x: Math.random() * (w - 60) + 30,
+                y: Math.random() * (h - 250), 
+                size: 14,
+                speed: currentZombieSpeed + (Math.random() * 0.4),
+                char: '0'
+            });
+        }
+        updateHUD();
+    }
+
+    function updateHUD() {
+        document.getElementById('lvlDisplay').innerText = level;
+        document.getElementById('wpnDisplay').innerText = weaponLevel;
+        let zCount = document.getElementById('zombieCountDisplay');
+        zCount.innerText = zombies.length;
+        zCount.style.color = zombies.length === 0 ? "#44ff44" : "#ff4444";
+    }
+
+    function shoot() {
+        if(!isPlaying) return; playShootSound();
+        let angles = [0];
+        if(weaponLevel >= 2) angles = [-0.2, 0.2];
+        if(weaponLevel >= 3) angles = [-0.3, 0, 0.3];
+        if(weaponLevel >= 4) angles = [-0.4, -0.15, 0.15, 0.4];
+
+        angles.forEach(angleOffset => {
+            let dirX = player.lastDir.x; let dirY = player.lastDir.y;
+            let cos = Math.cos(angleOffset); let sin = Math.sin(angleOffset);
+            let vx = dirX * cos - dirY * sin; let vy = dirX * sin + dirY * cos;
+            bullets.push({ x: player.x, y: player.y, vx: vx * 12, vy: vy * 12, radius: 4 });
+        });
+    }
+
+    function rectIntersect(x1, y1, w1, h1, x2, y2, w2, h2) {
+        return x2 < x1 + w1 && x2 + w2 > x1 && y2 < y1 + h1 && y2 + h2 > y1;
+    }
+
+    function update() {
+        if(!isPlaying) return;
+
+        let dx = 0; let dy = 0;
+        if(keys.up) dy = -player.speed; if(keys.down) dy = player.speed;
+        if(keys.left) dx = -player.speed; if(keys.right) dx = player.speed;
+
+        if(dx !== 0 || dy !== 0) {
+            let len = Math.hypot(dx, dy);
+            player.lastDir.x = dx / len; player.lastDir.y = dy / len;
+        }
+
+        player.x += dx;
+        obstacles.forEach(obs => { if(rectIntersect(player.x - player.size, player.y - player.size, player.size*2, player.size*2, obs.x, obs.y, obs.w, obs.h)) player.x -= dx; });
+        player.y += dy;
+        obstacles.forEach(obs => { if(rectIntersect(player.x - player.size, player.y - player.size, player.size*2, player.size*2, obs.x, obs.y, obs.w, obs.h)) player.y -= dy; });
+        player.x = Math.max(player.size, Math.min(w - player.size, player.x));
+        player.y = Math.max(player.size, Math.min(h - player.size, player.y));
+
+        for(let i = bullets.length - 1; i >= 0; i--) {
+            let b = bullets[i]; b.x += b.vx; b.y += b.vy;
+            let hitWall = false;
+            obstacles.forEach(obs => { if(b.x > obs.x && b.x < obs.x + obs.w && b.y > obs.y && b.y < obs.y + obs.h) hitWall = true; });
+
+            if(hitWall || b.x < 0 || b.x > w || b.y < 0 || b.y > h) { bullets.splice(i, 1); continue; }
+
+            for(let j = zombies.length - 1; j >= 0; j--) {
+                let z = zombies[j];
+                if(Math.hypot(b.x - z.x, b.y - z.y) < z.size + b.radius) {
+                    dataTrails.push({x: z.x, y: z.y, text: "NaN", alpha: 0.6});
+                    zombies.splice(j, 1); bullets.splice(i, 1); updateHUD(); break;
+                }
+            }
+        }
+
+        zombies.forEach(z => {
+            let angle = Math.atan2(player.y - z.y, player.x - z.x);
+            let zdx = Math.cos(angle) * z.speed; let zdy = Math.sin(angle) * z.speed;
+            
+            z.x += zdx; obstacles.forEach(obs => { if(rectIntersect(z.x - z.size, z.y - z.size, z.size*2, z.size*2, obs.x, obs.y, obs.w, obs.h)) z.x -= zdx; });
+            z.y += zdy; obstacles.forEach(obs => { if(rectIntersect(z.x - z.size, z.y - z.size, z.size*2, z.size*2, obs.x, obs.y, obs.w, obs.h)) z.y -= zdy; });
+
+            if(Math.hypot(player.x - z.x, player.y - z.y) < player.size + z.size) {
+                triggerGameOver(false, "VALUE = 0", `คุณถูกคูณด้วย 0 ในสมการที่ ${level}...`);
+            }
+        });
+
+        if(zombies.length === 0 && rectIntersect(player.x - player.size, player.y - player.size, player.size*2, player.size*2, door.x, door.y, door.w, door.h)) {
+            reachDoor();
+        }
+
+        draw();
+        if(isPlaying) requestAnimationFrame(update);
+    }
+
+    function draw() {
+        ctx.fillStyle = '#050505'; ctx.fillRect(0, 0, w, h);
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        dataTrails.forEach(b => { ctx.fillStyle = `rgba(0, 255, 0, ${b.alpha})`; ctx.font = '12px Courier New'; ctx.fillText(b.text, b.x, b.y); });
+
+        let isDoorOpen = zombies.length === 0;
+        ctx.fillStyle = isDoorOpen ? '#004400' : '#440000'; ctx.fillRect(door.x, door.y, door.w, door.h);
+        ctx.strokeStyle = isDoorOpen ? '#00ff00' : '#ff0000'; ctx.strokeRect(door.x, door.y, door.w, door.h);
+        ctx.fillStyle = isDoorOpen ? '#00ff00' : '#ff0000'; ctx.font = 'bold 24px Courier New';
+        ctx.fillText(isDoorOpen ? '∑' : '🔒', door.x + door.w/2, door.y + door.h/2);
+
+        if(!isDoorOpen) { ctx.fillStyle = '#ff4444'; ctx.font = '12px Courier New'; ctx.fillText('ELIMINATE 0s', door.x + door.w/2, door.y - 12); }
+
+        ctx.fillStyle = '#0a110a';
+        obstacles.forEach(obs => { ctx.fillRect(obs.x, obs.y, obs.w, obs.h); ctx.strokeStyle = '#003300'; ctx.lineWidth = 2; ctx.strokeRect(obs.x, obs.y, obs.w, obs.h); });
+
+        ctx.fillStyle = '#ff4444'; ctx.font = 'bold 20px Courier New'; bullets.forEach(b => { ctx.fillText('-', b.x, b.y); });
+
+        ctx.fillStyle = '#00ffff'; ctx.font = `bold ${player.size * 2}px Courier New`; ctx.shadowColor = '#00ffff'; ctx.shadowBlur = 10;
+        ctx.fillText('1', player.x, player.y); ctx.shadowBlur = 0;
+
+        ctx.fillStyle = '#ff0000'; ctx.font = `bold ${zombies[0] ? zombies[0].size * 2.2 : 24}px Courier New`;
+        ctx.shadowColor = '#ff0000'; ctx.shadowBlur = Math.random() > 0.5 ? 15 : 5; 
+        zombies.forEach(z => { ctx.fillText(z.char, z.x, z.y); }); ctx.shadowBlur = 0;
+
+        ctx.strokeStyle = 'rgba(0, 255, 0, 0.4)'; ctx.lineWidth = 1; ctx.setLineDash([5, 5]); 
+        ctx.beginPath(); ctx.moveTo(player.x, player.y); ctx.lineTo(player.x + player.lastDir.x * 60, player.y + player.lastDir.y * 60); ctx.stroke(); ctx.setLineDash([]); 
+
+        let gradient = ctx.createRadialGradient(player.x, player.y, 60, player.x, player.y, h);
+        gradient.addColorStop(0, 'rgba(0, 0, 0, 0)'); gradient.addColorStop(0.3, 'rgba(0, 20, 0, 0.1)'); gradient.addColorStop(1, 'rgba(0, 0, 0, 0.6)');    
+        ctx.fillStyle = gradient; ctx.fillRect(0, 0, w, h);
+    }
+
+    function reachDoor() {
+        isPlaying = false;
+        const qData = questions[level - 1];
+        document.getElementById('questionText').innerText = qData.q;
+        const choicesContainer = document.getElementById('choicesContainer');
+        choicesContainer.innerHTML = '';
+        
+        qData.choices.forEach((choice, index) => {
+            let btn = document.createElement('button');
+            btn.className = 'choice-btn'; btn.innerText = choice;
+            btn.onclick = () => answerQuestion(index, qData.ans);
+            choicesContainer.appendChild(btn);
+        });
+        document.getElementById('questionModal').style.display = 'flex';
+    }
+
+    function answerQuestion(selectedIndex, correctIndex) {
+        document.getElementById('questionModal').style.display = 'none';
+        
+        if(selectedIndex === correctIndex) {
+            alert("LOGIC ACCEPTED: อัปเกรดปืนสำเร็จ!");
+            if (weaponLevel < 4) weaponLevel++; 
+            level++;
+            
+            if(level > 10) {
+                triggerGameOver(true, "EQUATION SOLVED 🎉", "ยอดเยี่ยม! ผ่าน 10 ด่านรวดโดยไม่ตาย!");
+            } else {
+                initLevel(level); isPlaying = true; update();
+            }
+        } else {
+            triggerGameOver(false, "LOGIC ERROR", `วิเคราะห์ผิดที่ด่าน ${level}... ระบบรีเซ็ตใหม่ทั้งหมด!`);
+        }
+    }
+
+    function triggerGameOver(isWin, title, desc) {
+        isPlaying = false;
+        document.getElementById('gameContainer').style.display = 'none';
+        const endScreen = document.getElementById('gameOverScreen');
+        const endTitle = document.getElementById('endTitle');
+        const endDesc = document.getElementById('endDesc');
+        
+        endScreen.style.display = 'flex';
+        endTitle.innerText = title; endTitle.setAttribute('data-text', title);
+        endTitle.style.color = isWin ? "#44ff44" : "#ff0000"; endDesc.innerText = desc;
+    }
+</script>
+
+</body>
+</html>
+    
+  </body>
+  
+</html>
